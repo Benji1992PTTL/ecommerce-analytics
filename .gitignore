@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Data files
+data/raw/*
+data/processed/*
+*.csv
+*.parquet
+
+# DuckDB
+*.duckdb
+*.wal
+
+# Power BI local/cache
+**/.pbi/cache.abf
+**/.pbi/localSettings.json
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
