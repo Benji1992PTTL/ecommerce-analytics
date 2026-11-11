@@ -21,3 +21,9 @@ data/processed/*
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Power BI local/cache
+**/.pbi/cache.abf
+**/.pbi/localSettings.json
+**/.pbi/unappliedChanges.json
+**/.pbi/editorSettings.json

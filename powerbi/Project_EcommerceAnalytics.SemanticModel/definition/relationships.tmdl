@@ -1,0 +1,48 @@
+relationship 00955028-f7a8-4dc9-9716-e39beeb54805
+	fromColumn: mart_order_sales.purchase_date
+	toColumn: dim_calendar.Date
+
+relationship 46495193-7aba-44e0-92e8-aabd86872bec
+	fromColumn: mart_order_sales.customer_id
+	toColumn: dim_customers.customer_id
+
+relationship e6cb689f-24b0-4cb4-917e-d5fc0ae1ab1d
+	fromColumn: mart_product_sales.purchase_date
+	toColumn: dim_calendar.Date
+
+relationship 234967ef-1947-42f1-9ce3-20ed658426d1
+	fromColumn: mart_product_sales.customer_id
+	toColumn: dim_customers.customer_id
+
+relationship b4cc52eb-d356-42fc-8eb8-263c23523e49
+	fromColumn: mart_payments.purchase_date
+	toColumn: dim_calendar.Date
+
+relationship be461a98-d74a-44c6-9332-a46863fea161
+	fromColumn: mart_payments.customer_id
+	toColumn: dim_customers.customer_id
+
+relationship 619198d8-edd6-4366-898c-0a175f8ddc59
+	fromColumn: mart_reviews.purchase_date
+	toColumn: dim_calendar.Date
+
+relationship 5747b124-a474-49f9-98be-cb49d4d635f1
+	fromColumn: mart_reviews.customer_id
+	toColumn: dim_customers.customer_id
+
+relationship ad3f61d3-bcd0-455f-a2d7-87c565d057ed
+	fromColumn: mart_deliveries.purchase_date
+	toColumn: dim_calendar.Date
+
+relationship 58f981bf-6522-4ecc-9595-8ff90fe3d4d8
+	fromColumn: mart_deliveries.customer_id
+	toColumn: dim_customers.customer_id
+
+relationship fe7453c8-9a8b-46dc-ada3-175cd7829160
+	fromColumn: mart_product_sales.product_id
+	toColumn: dim_products.product_id
+
+relationship 35d67bf9-7395-46b6-82a9-b84bb2195e6f
+	fromColumn: mart_product_sales.seller_id
+	toColumn: dim_sellers.seller_id
+

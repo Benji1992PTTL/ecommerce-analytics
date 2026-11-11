@@ -1,0 +1,49 @@
+table dim_sellers
+	lineageTag: 8e90d6ef-f8c7-48e2-9286-c24f24db260c
+
+	column seller_id
+		dataType: string
+		lineageTag: 755885fd-57df-45ac-94c2-c334046bdf1f
+		summarizeBy: none
+		sourceColumn: seller_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column zip_code_prefix
+		dataType: int64
+		formatString: 0
+		lineageTag: b1b7bf3b-4a3c-4732-99f2-409fa7db43ff
+		summarizeBy: none
+		sourceColumn: zip_code_prefix
+
+		annotation SummarizationSetBy = Automatic
+
+	column city
+		dataType: string
+		lineageTag: 42691f6d-4c1c-413b-82ea-980de4564ca4
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	column state
+		dataType: string
+		lineageTag: 61b8d932-8921-42c7-a65c-59e3b969413b
+		summarizeBy: none
+		sourceColumn: state
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_sellers = m
+		mode: import
+		queryGroup: Dimensions
+		source =
+				let
+				  Source = Csv.Document(File.Contents("C:\Projects\ecommerce-analytics\data\processed\powerbi\dim_sellers.csv"), [Delimiter = ",", Columns = 4, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"seller_id", type text}, {"zip_code_prefix", Int64.Type}, {"city", type text}, {"state", type text}}, "en-US")
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table
+

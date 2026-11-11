@@ -1,0 +1,156 @@
+table mart_reviews
+	lineageTag: 1d5c65b8-4cf7-48bd-b529-96ff38c7f79f
+
+	measure 'Review Count' = COUNTROWS(mart_reviews)
+		lineageTag: 69672f32-8c6b-4b45-b4fe-4c1117ee496e
+
+	measure 'Reviewed Orders' = DISTINCTCOUNT(mart_reviews[order_id])
+		lineageTag: ac7dadca-21af-4b1b-841c-ea98ba6b2fe7
+
+	measure 'Average Review Score' = AVERAGE(mart_reviews[review_score])
+		lineageTag: 4d48a13c-ae1b-4e83-a5f5-23551129cca6
+
+	measure 'Positive Reviews %' = DIVIDE(CALCULATE([Review Count], mart_reviews[review_score] >= 4), [Review Count])
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 49ae9f11-ce41-40f3-ad1b-9caa062dd814
+
+	measure 'Low Reviews %' = DIVIDE(CALCULATE([Review Count], mart_reviews[review_score] <= 2), [Review Count])
+		lineageTag: 8c2555ce-f36d-460b-83cd-3bf01790e40f
+
+	measure 'Average Score On Time' = CALCULATE([Average Review Score], mart_reviews[is_late_delivery] = 0)
+		lineageTag: 766cc1f2-daab-4a32-9887-754d78b84de9
+
+	measure 'Average Score Late' = CALCULATE([Average Review Score], mart_reviews[is_late_delivery] = 1)
+		lineageTag: ddb0ed46-88f3-419d-aa69-b22182093855
+
+	column customer_id
+		dataType: string
+		lineageTag: 48d41dec-c116-4af0-ab48-3bdf986b9750
+		summarizeBy: none
+		sourceColumn: customer_id
+
+	column purchase_date
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 0d2a37bc-f087-4ea0-8d6f-5ab8031251b8
+		summarizeBy: none
+		sourceColumn: purchase_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column review_id
+		dataType: string
+		lineageTag: 3cfc40a8-641f-4bfc-a6c4-cb619937494c
+		summarizeBy: none
+		sourceColumn: review_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_id
+		dataType: string
+		lineageTag: e4818b05-401a-419b-80d4-2e79f264b577
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column review_score
+		dataType: int64
+		formatString: 0
+		lineageTag: 8f64113c-f7fb-46a0-9aec-a2ebf0bdb59f
+		summarizeBy: sum
+		sourceColumn: review_score
+
+		annotation SummarizationSetBy = Automatic
+
+	column review_created_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: ceff9ac4-dedb-41db-97a6-a7b45f111b52
+		summarizeBy: none
+		sourceColumn: review_created_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column review_answered_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 392c5adc-dc0c-4d46-aa0a-facd45c5df5f
+		summarizeBy: none
+		sourceColumn: review_answered_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: 1ff0f5b8-d258-4c1a-8634-e55cfdfbf31e
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column purchased_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 0e4f158e-7010-4ca6-a596-ea66dd018831
+		summarizeBy: none
+		sourceColumn: purchased_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column delivered_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 17a88203-5046-4dfd-9976-c4a169264d0a
+		summarizeBy: none
+		sourceColumn: delivered_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column estimated_delivery_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: db10d50c-e0de-47ec-92f3-5474f0edffbe
+		summarizeBy: none
+		sourceColumn: estimated_delivery_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column state
+		dataType: string
+		lineageTag: f1c26541-f45d-4831-95e1-e36e5a58636c
+		summarizeBy: none
+		sourceColumn: state
+
+		annotation SummarizationSetBy = Automatic
+
+	column city
+		dataType: string
+		lineageTag: 2ae0f7a4-55dd-4558-8ece-6874ffb3676c
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_late_delivery
+		dataType: int64
+		formatString: 0
+		lineageTag: 141e64c7-5de2-4192-b87a-d22abe9ac05c
+		summarizeBy: sum
+		sourceColumn: is_late_delivery
+
+		annotation SummarizationSetBy = Automatic
+
+	partition mart_reviews = m
+		mode: import
+		queryGroup: 'Fact Tables'
+		source =
+				let
+				  Source = Csv.Document(File.Contents("C:\Projects\ecommerce-analytics\data\processed\powerbi\mart_reviews.csv"), [Delimiter = ",", Columns = null, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"review_id", type text}, {"order_id", type text}, {"review_score", Int64.Type}, {"review_created_at", type datetime}, {"review_answered_at", type datetime}, {"status", type text}, {"purchased_at", type datetime}, {"delivered_at", type datetime}, {"estimated_delivery_at", type datetime}, {"state", type text}, {"city", type text}, {"is_late_delivery", Int64.Type}, {"customer_id", type text}, {"purchase_date", type date}}, "en-US")
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table
+

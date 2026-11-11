@@ -1,0 +1,183 @@
+table mart_order_sales
+	lineageTag: d5189576-a3ad-4ec2-ac8a-a31753296d09
+
+	measure 'Total Revenue' = CALCULATE(SUM(mart_order_sales[product_value]), mart_order_sales[status] = "delivered", mart_order_sales[item_count] > 0)
+		lineageTag: 523f5f6b-e74a-489a-af26-3961bafd86ad
+
+	measure 'Freight Revenue' = CALCULATE(SUM(mart_order_sales[freight_value]), mart_order_sales[status] = "delivered", mart_order_sales[item_count] > 0)
+		lineageTag: 9bc1a333-c700-46cb-a503-f6db878df4a5
+
+	measure 'Total Order Value' = [Total Revenue] + [Freight Revenue]
+		lineageTag: 3a984216-2def-4b6c-97de-0f260bdce8f8
+
+	measure 'Delivered Orders' = CALCULATE(DISTINCTCOUNT(mart_order_sales[order_id]), mart_order_sales[status] = "delivered", mart_order_sales[item_count] > 0)
+		lineageTag: e0670c25-5cb2-4fb6-8c66-85762236df1d
+
+	measure 'All Orders' = DISTINCTCOUNT(mart_order_sales[order_id])
+		lineageTag: 4f5ba94f-3aa0-4684-8e9a-b2debeb29065
+
+	measure 'Cancelled Orders' = CALCULATE(DISTINCTCOUNT(mart_order_sales[order_id]), mart_order_sales[status] = "canceled")
+		lineageTag: 65dc0996-10ae-4068-bb48-c2ac7edbf680
+
+	measure 'Average Order Value' = DIVIDE([Total Revenue], [Delivered Orders])
+		lineageTag: 2cc27cc1-6fd5-408d-91ab-76cb1b8b5244
+
+	measure 'Items Sold' = CALCULATE(SUM(mart_order_sales[item_count]), mart_order_sales[status] = "delivered", mart_order_sales[item_count] > 0)
+		lineageTag: ccab532a-3365-49ba-8645-74b2ee9777d5
+
+	measure 'Delivery Completion Rate' = DIVIDE([Delivered Orders], [All Orders])
+		lineageTag: bc95c35e-d9ff-4359-ba87-f3c33533400a
+
+	measure 'Unique Customers' = CALCULATE(DISTINCTCOUNT(mart_order_sales[customer_unique_id]), mart_order_sales[status] = "delivered", mart_order_sales[item_count] > 0)
+		lineageTag: 5de0e18c-42df-4126-a865-37c4727bf391
+
+	measure 'Revenue Previous Year' = CALCULATE([Total Revenue], SAMEPERIODLASTYEAR(dim_calendar[Date]))
+		lineageTag: 660756f3-f843-42aa-960e-9d710c0787ac
+
+	measure 'Revenue YoY %' = DIVIDE([Total Revenue] - [Revenue Previous Year], [Revenue Previous Year])
+		lineageTag: a0964a4e-721a-4251-8a1d-4bc2fa77b529
+
+	measure 'Revenue Previous Month' = CALCULATE([Total Revenue], DATEADD(dim_calendar[Date], -1, MONTH))
+		lineageTag: 4edbb5ec-ba6b-4429-842f-16345d7dd810
+
+	measure 'Revenue MoM %' = DIVIDE([Total Revenue] - [Revenue Previous Month], [Revenue Previous Month])
+		lineageTag: edfa852d-decf-4ea1-9276-87322f8e671f
+
+	measure 'State Order Rank' = IF(ISINSCOPE(dim_customers[state]), RANKX(ALLSELECTED(dim_customers[state]), [Delivered Orders], , DESC, DENSE))
+		lineageTag: 90ba87b2-2c76-434f-925b-72243002c833
+
+	measure 'State Cumulative Orders' = IF(ISINSCOPE(dim_customers[state]), VAR CurrentOrders = [Delivered Orders] RETURN SUMX(FILTER(ALLSELECTED(dim_customers[state]), [Delivered Orders] >= CurrentOrders), [Delivered Orders]))
+		lineageTag: 1443c226-ec56-4e93-b087-1391914057d4
+
+	measure 'State Cumulative Orders %' = DIVIDE([State Cumulative Orders], CALCULATE([Delivered Orders], ALLSELECTED(dim_customers[state])))
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 585222b5-4c11-4887-8c04-85cca40837bd
+
+	measure 'State Pareto 80% Flag' = IF(ISINSCOPE(dim_customers[state]) && [State Cumulative Orders %] - DIVIDE([Delivered Orders], CALCULATE([Delivered Orders], ALLSELECTED(dim_customers[state]))) < 0.8, 1, 0)
+		lineageTag: 3387f7d7-8b50-40bb-b413-09aeb1fa6ec1
+
+	column customer_id
+		dataType: string
+		lineageTag: bdbea5c0-4650-4960-9632-f74027e0e993
+		summarizeBy: none
+		sourceColumn: customer_id
+
+	column purchase_date
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: dc5cf981-d308-476f-84db-7ac284ddb272
+		summarizeBy: none
+		sourceColumn: purchase_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column order_id
+		dataType: string
+		lineageTag: 60c3892f-09b2-497f-ae2a-8cd9bb6ac19d
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_unique_id
+		dataType: string
+		lineageTag: c4af1b0f-1aec-41c1-a926-455ec7ef81e9
+		summarizeBy: none
+		sourceColumn: customer_unique_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column city
+		dataType: string
+		lineageTag: c25be790-74cd-4744-a25b-11233f8fcf3b
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	column state
+		dataType: string
+		lineageTag: 02f7ee15-09e5-465a-a9ae-13779be07acb
+		summarizeBy: none
+		sourceColumn: state
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: 757dd4ff-0acf-45d2-984c-b0cd04a33053
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column purchased_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 656bbc68-bf50-45b6-a90b-0e819b6aa7ea
+		summarizeBy: none
+		sourceColumn: purchased_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column delivered_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 5d2923f2-bcab-4498-a7b1-4666ada9b157
+		summarizeBy: none
+		sourceColumn: delivered_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column item_count
+		dataType: int64
+		formatString: 0
+		lineageTag: 6160d65c-6038-4642-a2a0-864a23355a13
+		summarizeBy: sum
+		sourceColumn: item_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_value
+		dataType: double
+		lineageTag: 40360d67-11cf-4ccf-91a0-36aab85cf4d7
+		summarizeBy: sum
+		sourceColumn: product_value
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column freight_value
+		dataType: double
+		lineageTag: 50c4c52b-aef5-485a-b711-2bf7f491e703
+		summarizeBy: sum
+		sourceColumn: freight_value
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column total_order_value
+		dataType: double
+		lineageTag: 4e9b5ca1-38ea-45f6-a904-727ef3d2671f
+		summarizeBy: sum
+		sourceColumn: total_order_value
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition mart_order_sales = m
+		mode: import
+		queryGroup: 'Fact Tables'
+		source =
+				let
+				  Source = Csv.Document(File.Contents("C:\Projects\ecommerce-analytics\data\processed\powerbi\mart_order_sales.csv"), [Delimiter = ",", Columns = null, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"order_id", type text}, {"customer_unique_id", type text}, {"city", type text}, {"state", type text}, {"status", type text}, {"purchased_at", type datetime}, {"delivered_at", type datetime}, {"item_count", Int64.Type}, {"product_value", type number}, {"freight_value", type number}, {"total_order_value", type number}, {"customer_id", type text}, {"purchase_date", type date}}, "en-US")
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table
+

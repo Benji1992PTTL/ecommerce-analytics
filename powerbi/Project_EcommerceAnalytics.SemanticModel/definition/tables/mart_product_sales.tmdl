@@ -1,0 +1,191 @@
+table mart_product_sales
+	lineageTag: 01b0681a-c22b-497c-8b27-27f0b5479e3c
+
+	measure 'Product Revenue' = CALCULATE(SUM(mart_product_sales[item_price]), mart_product_sales[status] = "delivered")
+		lineageTag: 4ff9554a-9d3e-4988-a323-516ca13dcd5e
+
+	measure 'Product Freight' = CALCULATE(SUM(mart_product_sales[freight_value]), mart_product_sales[status] = "delivered")
+		lineageTag: 4618a247-1bd1-47ec-a3a2-8461ebad02a6
+
+	measure 'Product Items Sold' = CALCULATE(COUNTROWS(mart_product_sales), mart_product_sales[status] = "delivered")
+		lineageTag: 409d3b37-e878-4553-b6fc-2506205bf179
+
+	measure 'Product Orders' = CALCULATE(DISTINCTCOUNT(mart_product_sales[order_id]), mart_product_sales[status] = "delivered")
+		lineageTag: 7ad931a9-4655-4dde-8e99-c19f63dd88b9
+
+	measure 'Category Revenue Share %' = DIVIDE([Product Revenue], CALCULATE([Product Revenue], ALLSELECTED(dim_products[category_name_en])))
+		lineageTag: fd3922d3-9312-4fcb-b0e0-bad9eec47fcc
+
+	measure 'Category Revenue Rank' = IF(ISINSCOPE(dim_products[category_name_en]), RANKX(ALLSELECTED(dim_products[category_name_en]), [Product Revenue], , DESC, DENSE))
+		lineageTag: fed8d4e0-3df4-498e-9617-9a5af3c726a2
+
+	measure 'Category Cumulative Revenue' = IF(ISINSCOPE(dim_products[category_name_en]), VAR CurrentRevenue = [Product Revenue] RETURN SUMX(FILTER(ALLSELECTED(dim_products[category_name_en]), [Product Revenue] >= CurrentRevenue), [Product Revenue]))
+		lineageTag: 57d03599-4fe7-4ffa-9bf9-84c50ebc5294
+
+	measure 'Category Cumulative Revenue %' = DIVIDE([Category Cumulative Revenue], CALCULATE([Product Revenue], ALLSELECTED(dim_products[category_name_en])))
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: aa643c17-2f69-495c-a040-915b3a380342
+
+	measure 'Category Pareto 80% Flag' = IF(ISINSCOPE(dim_products[category_name_en]) && [Category Cumulative Revenue %] - [Category Revenue Share %] < 0.8, 1, 0)
+		lineageTag: 2f5ede12-813f-44db-b748-6b37c87fb269
+
+	measure 'Average Product Description Length' = AVERAGE(dim_products[product_description_length])
+		lineageTag: 9bf8f3fc-6f23-427e-bb81-ca6fe8e62d44
+
+	column customer_id
+		dataType: string
+		lineageTag: 7d464dbc-5a09-4475-bbc2-d56c1bb75d26
+		summarizeBy: none
+		sourceColumn: customer_id
+
+	column purchase_date
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 39d6ea63-dc4c-4076-a156-9a7da50ddd0c
+		summarizeBy: none
+		sourceColumn: purchase_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column order_id
+		dataType: string
+		lineageTag: 0978e5e7-1eb5-40d0-a664-82a65391ac88
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_item_id
+		dataType: int64
+		formatString: 0
+		lineageTag: c4bf6727-c4f0-4157-b449-fb34fa38ba7d
+		summarizeBy: sum
+		sourceColumn: order_item_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: string
+		lineageTag: dde58596-967e-4c48-b027-e28aa182a3ce
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column seller_id
+		dataType: string
+		lineageTag: 0d908388-4558-40e8-9a90-79fdba92a7dc
+		summarizeBy: none
+		sourceColumn: seller_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column category_name_pt
+		dataType: string
+		lineageTag: 92f24108-f970-46c5-834f-b6cda5825545
+		summarizeBy: none
+		sourceColumn: category_name_pt
+
+		annotation SummarizationSetBy = Automatic
+
+	column category_name_en
+		dataType: string
+		lineageTag: 02a6687c-0545-4f77-a67d-8255c139fabd
+		summarizeBy: none
+		sourceColumn: category_name_en
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_name_length
+		dataType: int64
+		formatString: 0
+		lineageTag: 6ac3a994-ca86-4dd8-976a-6277cc3325bb
+		summarizeBy: sum
+		sourceColumn: product_name_length
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_description_length
+		dataType: int64
+		formatString: 0
+		lineageTag: ca1de02b-8bf1-4e44-95c3-3940671741db
+		summarizeBy: sum
+		sourceColumn: product_description_length
+
+		annotation SummarizationSetBy = Automatic
+
+	column photos_count
+		dataType: int64
+		formatString: 0
+		lineageTag: 340ddaf9-af13-45b7-9c5f-7ce95986db06
+		summarizeBy: sum
+		sourceColumn: photos_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: b9a5276c-e515-4b1e-8df9-cb97a2c7d7fe
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column purchased_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 3c56917e-b9f6-47d8-a1e2-2ca8d57d42e7
+		summarizeBy: none
+		sourceColumn: purchased_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column city
+		dataType: string
+		lineageTag: 5ba8605e-3f25-4b5f-9913-4dd3ca33ffbd
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	column state
+		dataType: string
+		lineageTag: d1999080-1db3-44b2-99de-76f08d8e0faa
+		summarizeBy: none
+		sourceColumn: state
+
+		annotation SummarizationSetBy = Automatic
+
+	column item_price
+		dataType: double
+		lineageTag: a8c89538-2b28-4dff-85b3-6ebebd790bf3
+		summarizeBy: sum
+		sourceColumn: item_price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column freight_value
+		dataType: double
+		lineageTag: 03357a9e-4cfb-40c3-a149-9ed5d7c27c6b
+		summarizeBy: sum
+		sourceColumn: freight_value
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition mart_product_sales = m
+		mode: import
+		queryGroup: 'Fact Tables'
+		source =
+				let
+				  Source = Csv.Document(File.Contents("C:\Projects\ecommerce-analytics\data\processed\powerbi\mart_product_sales.csv"), [Delimiter = ",", Columns = null, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"order_id", type text}, {"order_item_id", Int64.Type}, {"product_id", type text}, {"seller_id", type text}, {"category_name_pt", type text}, {"category_name_en", type text}, {"product_name_length", Int64.Type}, {"product_description_length", Int64.Type}, {"photos_count", Int64.Type}, {"status", type text}, {"purchased_at", type datetime}, {"city", type text}, {"state", type text}, {"item_price", type number}, {"freight_value", type number}, {"customer_id", type text}, {"purchase_date", type date}}, "en-US")
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table
+

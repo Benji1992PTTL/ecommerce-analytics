@@ -1,0 +1,148 @@
+table mart_deliveries
+	lineageTag: afc43b3a-9504-45a9-92b2-5c59689b3f6b
+
+	measure 'Completed Deliveries' = CALCULATE(DISTINCTCOUNT(mart_deliveries[order_id]), mart_deliveries[status] = "delivered", NOT ISBLANK(mart_deliveries[delivered_at]))
+		lineageTag: 1cd1cce2-cc0d-4f49-8f73-fd2f1f651e7a
+
+	measure 'Average Delivery Days' = CALCULATE(AVERAGE(mart_deliveries[delivery_days]), mart_deliveries[status] = "delivered", NOT ISBLANK(mart_deliveries[delivered_at]))
+		lineageTag: cb433c43-101d-42e0-8643-f5cdcbf0d419
+
+	measure 'Late Deliveries' = CALCULATE([Completed Deliveries], mart_deliveries[is_late_delivery] = 1)
+		lineageTag: 9b204dcd-e8e2-43fc-a68d-31db66961292
+
+	measure 'On Time Deliveries' = CALCULATE([Completed Deliveries], mart_deliveries[is_late_delivery] = 0)
+		lineageTag: fc41664c-09c8-4554-81d4-4c6a29b2c3f2
+
+	measure 'Late Delivery Rate' = DIVIDE([Late Deliveries], [Late Deliveries] + [On Time Deliveries])
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: a9f987d5-c34d-4e44-8c69-324064ba860a
+
+	measure 'On Time Delivery Rate' = DIVIDE([On Time Deliveries], [Late Deliveries] + [On Time Deliveries])
+		lineageTag: d379babc-7644-482e-bd98-e7c6ddcc6cfa
+
+	measure 'Average Delay Days (Late)' = CALCULATE(AVERAGE(mart_deliveries[days_vs_estimate]), mart_deliveries[is_late_delivery] = 1)
+		lineageTag: 2aa337b0-8569-43ab-9a01-c22103001a3b
+
+	column customer_id
+		dataType: string
+		lineageTag: 664612d1-73f9-45fe-a4da-67d39e10c51a
+		summarizeBy: none
+		sourceColumn: customer_id
+
+	column purchase_date
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 52c26d84-7b38-4465-87b9-caa995b7ce31
+		summarizeBy: none
+		sourceColumn: purchase_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column order_id
+		dataType: string
+		lineageTag: f21d6d67-a4be-417c-bd8d-7be4f5d217d3
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: 8e5538f4-2bb6-4d04-85d8-19bcbfae77f7
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column purchased_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: a0070b91-535b-4343-baff-bbbe5e6513e7
+		summarizeBy: none
+		sourceColumn: purchased_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column shipped_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: f73743df-3356-442c-8f6e-ea6ed3e0f88f
+		summarizeBy: none
+		sourceColumn: shipped_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column delivered_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 58e39d80-9e82-4d1d-bb04-63ff1f1887bf
+		summarizeBy: none
+		sourceColumn: delivered_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column estimated_delivery_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 638f62dc-ec61-4dc0-ab77-5dab3e5a2de9
+		summarizeBy: none
+		sourceColumn: estimated_delivery_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column state
+		dataType: string
+		lineageTag: a5e1a65d-36ec-483a-8ce9-be9e0fe88b96
+		summarizeBy: none
+		sourceColumn: state
+
+		annotation SummarizationSetBy = Automatic
+
+	column city
+		dataType: string
+		lineageTag: aa29b1ef-d871-40f9-bed6-d6ae8411d738
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	column delivery_days
+		dataType: int64
+		formatString: 0
+		lineageTag: d8ba8068-a8e4-4bbc-b924-d0898ef61e3d
+		summarizeBy: sum
+		sourceColumn: delivery_days
+
+		annotation SummarizationSetBy = Automatic
+
+	column days_vs_estimate
+		dataType: int64
+		formatString: 0
+		lineageTag: b11c225f-6d9e-4c69-9ef2-2e648b4e032f
+		summarizeBy: sum
+		sourceColumn: days_vs_estimate
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_late_delivery
+		dataType: int64
+		formatString: 0
+		lineageTag: 45eebdf7-6cf9-402e-af99-13e85a0a7dbe
+		summarizeBy: sum
+		sourceColumn: is_late_delivery
+
+		annotation SummarizationSetBy = Automatic
+
+	partition mart_deliveries = m
+		mode: import
+		queryGroup: 'Fact Tables'
+		source =
+				let
+				  Source = Csv.Document(File.Contents("C:\Projects\ecommerce-analytics\data\processed\powerbi\mart_deliveries.csv"), [Delimiter = ",", Columns = null, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"order_id", type text}, {"status", type text}, {"purchased_at", type datetime}, {"shipped_at", type datetime}, {"delivered_at", type datetime}, {"estimated_delivery_at", type datetime}, {"state", type text}, {"city", type text}, {"delivery_days", Int64.Type}, {"days_vs_estimate", Int64.Type}, {"is_late_delivery", Int64.Type}, {"customer_id", type text}, {"purchase_date", type date}}, "en-US")
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table
+

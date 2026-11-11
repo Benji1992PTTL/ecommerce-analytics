@@ -1,0 +1,110 @@
+table mart_payments
+	lineageTag: 4dc9ed68-7513-4f9d-8f15-9e852cfe0dd8
+
+	measure 'Total Payments' = SUM(mart_payments[payment_value])
+		lineageTag: db480629-9394-4af2-8e66-f604b72d6cea
+
+	measure 'Delivered Payments' = CALCULATE(SUM(mart_payments[payment_value]), mart_payments[status] = "delivered")
+		lineageTag: b6f7c8d0-f54f-4825-a4ef-0ebf16345dd4
+
+	measure 'Payment Transactions' = COUNTROWS(mart_payments)
+		lineageTag: 9ec8636c-b9f5-4c2d-9945-8d6916c7efb0
+
+	measure 'Paid Orders' = DISTINCTCOUNT(mart_payments[order_id])
+		lineageTag: d5c5d803-2e1a-43c1-83a3-cffe3dc047c6
+
+	measure 'Average Installments' = AVERAGE(mart_payments[payment_installments])
+		lineageTag: 2dc013ae-17c1-4b9a-98ff-4df545a49052
+
+	measure 'Payment Method Share %' = DIVIDE([Total Payments], CALCULATE([Total Payments], ALLSELECTED(mart_payments[payment_type])))
+		lineageTag: 89145203-8b04-4e75-a957-25afed4661db
+
+	column customer_id
+		dataType: string
+		lineageTag: 1792de3b-47a8-4e51-8b40-8c3d49be94cf
+		summarizeBy: none
+		sourceColumn: customer_id
+
+	column purchase_date
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: b1dec119-667b-45b6-8ed7-13bc2c1f9902
+		summarizeBy: none
+		sourceColumn: purchase_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column order_id
+		dataType: string
+		lineageTag: 0037bf7f-f41a-4234-8a0e-ef4f59c6cbc9
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column payment_sequential
+		dataType: int64
+		formatString: 0
+		lineageTag: 9c79d963-ff50-433c-bde7-18ba1e9f17c9
+		summarizeBy: sum
+		sourceColumn: payment_sequential
+
+		annotation SummarizationSetBy = Automatic
+
+	column payment_type
+		dataType: string
+		lineageTag: 80e3a84b-a100-40be-aaa4-fb461e41ce51
+		summarizeBy: none
+		sourceColumn: payment_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column payment_installments
+		dataType: int64
+		formatString: 0
+		lineageTag: 44c626db-6bd7-46fd-a567-fc23e8943211
+		summarizeBy: sum
+		sourceColumn: payment_installments
+
+		annotation SummarizationSetBy = Automatic
+
+	column payment_value
+		dataType: double
+		lineageTag: 636d3046-ad60-4368-81b7-e32353843547
+		summarizeBy: sum
+		sourceColumn: payment_value
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column status
+		dataType: string
+		lineageTag: cc4701da-64b1-428e-8b50-f47e9beca7ff
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column purchased_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 2a9039db-6f6f-4edf-b7bc-5af9d953a74e
+		summarizeBy: none
+		sourceColumn: purchased_at
+
+		annotation SummarizationSetBy = Automatic
+
+	partition mart_payments = m
+		mode: import
+		queryGroup: 'Fact Tables'
+		source =
+				let
+				  Source = Csv.Document(File.Contents("C:\Projects\ecommerce-analytics\data\processed\powerbi\mart_payments.csv"), [Delimiter = ",", Columns = null, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"order_id", type text}, {"payment_sequential", Int64.Type}, {"payment_type", type text}, {"payment_installments", Int64.Type}, {"payment_value", type number}, {"status", type text}, {"purchased_at", type datetime}, {"customer_id", type text}, {"purchase_date", type date}}, "en-US")
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table
+

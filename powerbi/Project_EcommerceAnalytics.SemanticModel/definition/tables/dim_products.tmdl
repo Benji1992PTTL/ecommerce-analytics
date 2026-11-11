@@ -1,0 +1,103 @@
+table dim_products
+	lineageTag: d9177a1e-705d-4464-9f3b-40d4396b5ffb
+
+	column product_id
+		dataType: string
+		lineageTag: 992c3788-0556-4216-9f65-25f2ff6ba14c
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column category_name_pt
+		dataType: string
+		lineageTag: 36030656-870a-4ca3-9935-789a69d4b188
+		summarizeBy: none
+		sourceColumn: category_name_pt
+
+		annotation SummarizationSetBy = Automatic
+
+	column category_name_en
+		dataType: string
+		lineageTag: 9cb05af8-0fcc-4c26-8b62-3ef947c40a97
+		summarizeBy: none
+		sourceColumn: category_name_en
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_name_length
+		dataType: int64
+		formatString: 0
+		lineageTag: be2f3200-f518-433e-bdbf-34405860cd5a
+		summarizeBy: none
+		sourceColumn: product_name_length
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_description_length
+		dataType: int64
+		formatString: 0
+		lineageTag: bc2f68dd-c8d6-4bb1-b4b4-d31d852571d0
+		summarizeBy: none
+		sourceColumn: product_description_length
+
+		annotation SummarizationSetBy = Automatic
+
+	column photos_count
+		dataType: int64
+		formatString: 0
+		lineageTag: 01b0ab81-59a0-4c02-8240-c41a8694cc48
+		summarizeBy: none
+		sourceColumn: photos_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column weight_g
+		dataType: int64
+		formatString: 0
+		lineageTag: 081f8cdc-70b3-47ae-afc0-28e8b5b34739
+		summarizeBy: none
+		sourceColumn: weight_g
+
+		annotation SummarizationSetBy = Automatic
+
+	column length_cm
+		dataType: int64
+		formatString: 0
+		lineageTag: faa11e3c-a9e2-4094-8a0c-e1e11d54d2be
+		summarizeBy: none
+		sourceColumn: length_cm
+
+		annotation SummarizationSetBy = Automatic
+
+	column height_cm
+		dataType: int64
+		formatString: 0
+		lineageTag: 88f6b4b7-6e5d-4ca4-b668-e991fbcb0cba
+		summarizeBy: none
+		sourceColumn: height_cm
+
+		annotation SummarizationSetBy = Automatic
+
+	column width_cm
+		dataType: int64
+		formatString: 0
+		lineageTag: 89afb444-3168-4595-bc62-eae3f1e365d3
+		summarizeBy: none
+		sourceColumn: width_cm
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_products = m
+		mode: import
+		queryGroup: Dimensions
+		source =
+				let
+				  Source = Csv.Document(File.Contents("C:\Projects\ecommerce-analytics\data\processed\powerbi\dim_products.csv"), [Delimiter = ",", Columns = 10, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"product_id", type text}, {"category_name_pt", type text}, {"category_name_en", type text}, {"product_name_length", Int64.Type}, {"product_description_length", Int64.Type}, {"photos_count", Int64.Type}, {"weight_g", Int64.Type}, {"length_cm", Int64.Type}, {"height_cm", Int64.Type}, {"width_cm", Int64.Type}}, "en-US")
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table
+

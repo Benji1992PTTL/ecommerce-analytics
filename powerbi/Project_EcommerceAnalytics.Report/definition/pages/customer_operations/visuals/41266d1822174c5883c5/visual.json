@@ -1,0 +1,58 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "41266d1822174c5883c5",
+  "position": {
+    "x": 25,
+    "y": 660,
+    "z": 10,
+    "height": 385,
+    "width": 570,
+    "tabOrder": 10
+  },
+  "visual": {
+    "visualType": "donutChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "mart_payments"
+                    }
+                  },
+                  "Property": "payment_type"
+                }
+              },
+              "queryRef": "mart_payments.payment_type",
+              "nativeQueryRef": "Payment Type",
+              "active": true,
+              "displayName": "Payment Type"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "mart_payments"
+                    }
+                  },
+                  "Property": "Total Payments"
+                }
+              },
+              "queryRef": "mart_payments.Total Payments",
+              "nativeQueryRef": "Total Payments"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
